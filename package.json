@@ -1,0 +1,38 @@
+{
+  "name": "slurp",
+  "version": "0.1.0",
+  "author": "Eli Skeggs <skeggse@gmail.com>",
+  "description": "a lightweight asynchronous dependency injector",
+  "main": "./index",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/skeggse/slurp.git"
+  },
+  "homepage": "https://github.com/skeggse/slurp",
+  "bugs": "https://github.com/skeggse/slurp/issues",
+  "keywords": [
+    "slurp",
+    "async",
+    "asynchronous",
+    "dependency",
+    "injection",
+    "injector"
+  ],
+  "devDependencies": {
+    "expect.js": "~0.2.0",
+    "mocha": "~1.13.0",
+    "sinon": "~1.7.3"
+  },
+  "licenses": [
+    {
+      "type": "unlicense",
+      "url": "https://github.com/skeggse/slurp/blob/master/UNLICENSE"
+    }
+  ],
+  "engines": {
+    "node": "*"
+  }
+}
