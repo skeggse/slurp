@@ -4,12 +4,12 @@ slurp
 Slurp is a lightweight asynchronous dependency injector. Slurp makes unit testing and mocking easier, and makes networked service discovery easier.
 
 Purpose
-=======
+-------
 
 Create a tiny asynchronous dependency injector, one which would not fail if a dependency didn't exist, but instead wait for it to exist.
 
 Install
-=======
+-------
 
 [npm][]
 -------
@@ -26,11 +26,11 @@ $ git clone https://github.com/skeggse/slurp.git
 ```
 
 Test
-====
+----
 
 Run any of the following.
 
-```
+```sh
 $ mocha
 $ npm test
 $ make test
@@ -39,10 +39,63 @@ $ make test
 _remember to_ `npm install`!
 
 API
-===
+---
 
-exec(dependencies, callback, [context])
----------------------------------------
+### value(name, value)
+
+Registers a static value which is passed to the service or factory callback.
+
+```js
+var create = require('slurp');
+var slurp = create();
+
+slurp.exec(['speed'], function(speed) {
+  console.log(speed); // 88
+});
+
+slurp.value('speed', 88);
+```
+
+### constructor(name, constructor, [context])
+
+Register a constructor directly, without dependency injection. Use this for networked service discovery when the constructor has already been injected on the remote end. Remote services usually consist of static objects with methods, so value is usually more appropriate for remote services.
+
+```js
+var create = require('slurp');
+var slurp = create();
+
+slurp.exec(['bleep'], function(bleep) {
+  bleep.listen(console.log.bind(console, 'go'));
+
+  for (var i = 0; i < 100; i++) {
+    bleep.next();
+  }
+
+  // 'go' printed 10 times
+});
+
+slurp.constructor('bleep', function() {
+  var service = {}, count = 10, listeners = [];
+
+  service.next = function() {
+    if (!--count) {
+      count = 10;
+      listeners.forEach(function(listener) {
+        listener();
+      });
+    }
+  };
+
+  service.listen = function(fn) {
+    listeners.push(fn);
+  };
+
+  // we can't use the this trick because the context is static across instances
+  return service;
+});
+```
+
+### exec(dependencies, callback, [context])
 
 The backbone of Slurp, exec invokes the `callback` with the requested dependencies once all requested dependencies exist.
 
@@ -59,8 +112,7 @@ setTimeout(function() {
 }, 1000);
 ```
 
-service(name, dependencies, callback, [context])
-------------------------------------------------
+### service(name, dependencies, callback, [context])
 
 Register a service for all to see. The provided callback is executed once, and never again. The returned object will be used until/unless it is re-defined.
 
@@ -111,8 +163,7 @@ slurp.service('common', ['initial'], function(value) {
 slurp.value('initial', 4);
 ```
 
-factory(name, dependencies, callback, [context])
-------------------------------------------------
+### factory(name, dependencies, callback, [context])
 
 Register a service factory. The provided callback should return the service constructor function when provided the requested dependencies. Similar to Slurp.service, callback will be called once, but the returned constructor will play again and again.
 
@@ -170,66 +221,23 @@ slurp.factory('common', ['initial'], function(value) {
 slurp.value('initial', 4);
 ```
 
-constructor(name, constructor, [context])
------------------------------------------
+### intercept(fn)
 
-Register a constructor directly, without dependency injection. Use this for networked service discovery when the constructor has already been injected on the remote end. Remote services usually consist of static objects with methods, so value is usually more appropriate for remote services.
+Register an intercept. The provided function should take a `name` and return the module (not factorys) for that instance of the module. If the function returns a falsy value, control passes to the next intercept or to the internal registry.
 
-```js
-var create = require('slurp');
-var slurp = create();
+### resolve(name, callback)
 
-slurp.exec(['bleep'], function(bleep) {
-  bleep.listen(console.log.bind(console, 'go'));
-
-  for (var i = 0; i < 100; i++) {
-    bleep.next();
-  }
-
-  // 'go' printed 10 times
-});
-
-slurp.constructor('bleep', function() {
-  var service = {}, count = 10, listeners = [];
-
-  service.next = function() {
-    if (!--count) {
-      count = 10;
-      listeners.forEach(function(listener) {
-        listener();
-      });
-    }
-  };
-
-  service.listen = function(fn) {
-    listeners.push(fn);
-  };
-
-  // we can't use the this trick because the context is static across instances
-  return service;
-});
-```
-
-value(name, value)
-------------------
-
-Registers a static value which is passed to the service or factory callback.
-
-```js
-var create = require('slurp');
-var slurp = create();
-
-slurp.exec(['speed'], function(speed) {
-  console.log(speed); // 88
-});
-
-slurp.value('speed', 88);
-```
+Resolves a single module, calls back with a module instance. Guaranteed asynchronous.
 
 Browser Compatibility
 =====================
 
 This is a Node module, and relies on Node's `require`, the built-in `events` library, and the `inherits` function from the built-in `util` library. Browser compatibility not provided to reduce complexity.
+
+TODO
+====
+
+* asynchronous intercepts?
 
 Unlicense / Public Domain
 =========================

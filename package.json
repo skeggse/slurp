@@ -1,6 +1,6 @@
 {
   "name": "slurp",
-  "version": "0.1.0-1",
+  "version": "0.2.0",
   "author": "Eli Skeggs <skeggse@gmail.com>",
   "description": "a lightweight asynchronous dependency injector",
   "main": "./index",
@@ -23,8 +23,7 @@
   ],
   "devDependencies": {
     "expect.js": "~0.2.0",
-    "mocha": "~1.13.0",
-    "sinon": "~1.7.3"
+    "mocha": "~1.13.0"
   },
   "licenses": [
     {
