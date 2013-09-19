@@ -189,5 +189,20 @@ describe('Slurp', function() {
         done();
       });
     });
+
+    it('should ignore finished injections', function(done) {
+      slurp.exec(['things', 'others'], function(things, others) {
+        expect(things).to.equal('others');
+        expect(others).to.equal('hello');
+        setTimeout(done, 15);
+      });
+
+      slurp.value('others', 'hello');
+      slurp.value('things', 'others');
+
+      slurp.timeout(10, function(things) {
+        done(new Error('we should never get here'));
+      });
+    });
   });
 });
