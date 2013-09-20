@@ -1,7 +1,7 @@
 slurp
 =====
 
-Slurp is a lightweight asynchronous dependency injector. Slurp makes unit testing and mocking easier, and makes networked service discovery easier.
+Slurp is a lightweight asynchronous dependency injector. Slurp makes unit testing, mocking, and networked service discovery easier.
 
 Purpose
 -------
