@@ -243,6 +243,7 @@ TODO
 ====
 
 * asynchronous intercepts?
+* simplify factory pattern, no callback constructor?
 
 Unlicense / Public Domain
 =========================
