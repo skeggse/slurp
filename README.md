@@ -115,6 +115,8 @@ setTimeout(function() {
 
 Register a service for all to see. The provided callback is executed once, and never again. The returned object will be used until/unless it is re-defined.
 
+Services will be created lazily--if they're not used in a `factory`, `exec`, or `resolve`, they will never be instantiated.
+
 ```js
 var create = require('slurp');
 var slurp = create();
@@ -241,7 +243,6 @@ TODO
 ====
 
 * asynchronous intercepts?
-* lazy-load services?
 
 Unlicense / Public Domain
 =========================

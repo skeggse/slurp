@@ -137,12 +137,12 @@ describe('Slurp', function() {
       });
 
       slurp.exec(['hello'], function(hello) {
+        expect(first).to.be.ok();
         expect(hello.find(false)).to.eql({hello: false});
         expect(hello.find(true)).to.eql({hello: false});
         expect(hello.find(true)).to.eql({hello: true});
         expect(hello.find(false)).to.eql({hello: true});
         expect(hello.find(false)).to.eql({hello: false});
-        expect(first).to.be.ok();
         done();
       });
     });
