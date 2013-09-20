@@ -74,7 +74,7 @@ slurp.exec(['bleep'], function(bleep) {
   // 'go' printed 10 times
 });
 
-slurp.constructor('bleep', function() {
+slurp.constructor('bleep', function(callback) {
   var service = {}, count = 10, listeners = [];
 
   service.next = function() {
@@ -90,8 +90,7 @@ slurp.constructor('bleep', function() {
     listeners.push(fn);
   };
 
-  // we can't use the this trick because the context is static across instances
-  return service;
+  callback(null, service);
 });
 ```
 
@@ -124,14 +123,15 @@ slurp.exec(['userservice'], function(user) {
   console.log(user.auth()); // prints "hi there" a second after script start
 });
 
-slurp.service('userservice', ['hello'], function(hello) {
-  this.auth = function() {
+slurp.service('userservice', ['hello'], function(hello, callback) {
+  var service = {};
+
+  service.auth = function() {
     return hello;
   };
 
-  // the this object is defined just below as the context parameter
-  return this;
-}, {});
+  callback(null, service);
+});
 
 setTimeout(function() {
   slurp.value('hello', 'hi there');
@@ -152,13 +152,15 @@ slurp.exec(['common'], function(common) {
   console.log(common.increment()); // 6
 });
 
-slurp.service('common', ['initial'], function(value) {
-  this.increment = function() {
+slurp.service('common', ['initial'], function(value, callback) {
+  var service = {};
+
+  service.increment = function() {
     return value++;
   };
 
-  return this;
-}, {});
+  callback(null, service);
+});
 
 slurp.value('initial', 4);
 ```
@@ -177,14 +179,15 @@ slurp.exec(['userservice'], function(user) {
   console.log(user.auth()); // prints "hi there" a second after script start
 });
 
-slurp.service('userservice', ['hello'], function(hello) {
-  this.auth = function() {
+slurp.service('userservice', ['hello'], function(hello, callback) {
+  var service = {};
+
+  service.auth = function() {
     return hello;
   };
 
-  // the this object is defined just below as the context parameter
-  return this;
-}, {});
+  callback(null, service);
+});
 
 setTimeout(function() {
   slurp.value('hello', 'hi there');
@@ -206,16 +209,16 @@ slurp.exec(['common'], function(common) {
 });
 
 // more complicated than it needs to be, use a service
-slurp.factory('common', ['initial'], function(value) {
-  return function() {
+slurp.factory('common', ['initial'], function(value, callback) {
+  callback(null, function(callback) {
     var service = {};
 
     service.increment = function() {
       return value++;
     };
 
-    return service;
-  };
+    callback(null, service);
+  });
 });
 
 slurp.value('initial', 4);
@@ -223,7 +226,7 @@ slurp.value('initial', 4);
 
 ### intercept(fn)
 
-Register an intercept. The provided function should take a `name` and return the module (not factorys) for that instance of the module. If the function returns a falsy value, control passes to the next intercept or to the internal registry.
+Register an intercept. The provided function should take a `name` and return the module (not factory) for that instance of the module. If the function returns a falsy value, control passes to the next intercept or to the internal registry.
 
 ### resolve(name, callback)
 
@@ -238,6 +241,7 @@ TODO
 ====
 
 * asynchronous intercepts?
+* lazy-load services?
 
 Unlicense / Public Domain
 =========================

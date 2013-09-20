@@ -10,26 +10,46 @@ describe('Slurp', function() {
   });
 
   describe('#value', function() {
-    it('should expose an injectable constructor', function() {
+    it('should expose an injectable constructor', function(done) {
       slurp.value('thing1', {hello: true});
       slurp.value('thing2', {hello: false});
 
-      expect(slurp.registry.thing1()).to.eql({hello: true});
-      expect(slurp.registry.thing2()).to.eql({hello: false});
+      var first = false;
+      slurp.registry.thing1(function(err, res) {
+        expect(err).to.not.be.ok();
+        expect(res).to.eql({hello: true});
+        first = true;
+      });
+      slurp.registry.thing2(function(err, res) {
+        expect(err).to.not.be.ok();
+        expect(res).to.eql({hello: false});
+        expect(first).to.be.ok();
+        done();
+      });
     });
   });
 
   describe('#constructor', function() {
-    it('should expose an injectable constructor', function() {
-      slurp.constructor('thing1', function() {
-        return {hello: true};
+    it('should expose an injectable constructor', function(done) {
+      slurp.constructor('thing1', function(callback) {
+        callback(null, {hello: true});
       });
-      slurp.constructor('thing2', function() {
-        return {hello: false};
+      slurp.constructor('thing2', function(callback) {
+        callback(null, {hello: false});
       });
 
-      expect(slurp.registry.thing1()).to.eql({hello: true});
-      expect(slurp.registry.thing2()).to.eql({hello: false});
+      var first = false;
+      slurp.registry.thing1(function(err, res) {
+        expect(err).to.not.be.ok();
+        expect(res).to.eql({hello: true});
+        first = true;
+      });
+      slurp.registry.thing2(function(err, res) {
+        expect(err).to.not.be.ok();
+        expect(res).to.eql({hello: false});
+        expect(first).to.be.ok();
+        done();
+      });
     });
   });
 
@@ -45,6 +65,13 @@ describe('Slurp', function() {
 
   // assumes working slurp.value
   describe('#exec', function() {
+    it('should inject no dependencies', function(done) {
+      slurp.exec([], function() {
+        expect(arguments).to.eql([]);
+        done();
+      });
+    });
+
     it('should inject existing dependencies', function(done) {
       slurp.value('thing1', {hello: true});
       slurp.value('thing2', {hello: false});
@@ -88,18 +115,18 @@ describe('Slurp', function() {
       slurp.value('thing1', {hello: true});
       slurp.value('thing2', {hello: false});
 
-      slurp.service('hello', ['thing1', 'thing2'], function(thing1, thing2) {
+      slurp.service('hello', ['thing1', 'thing2'], function(thing1, thing2, callback) {
         var invert = false;
-        this.find = function(two) {
-          if (invert) {
-            two = !two;
+        callback(null, {
+          find: function(two) {
+            if (invert) {
+              two = !two;
+            }
+            invert = !invert;
+            return two ? thing2 : thing1;
           }
-          invert = !invert;
-          return two ? thing2 : thing1;
-        };
-
-        return this;
-      }, {});
+        });
+      });
 
       var first = false;
       slurp.exec(['hello'], function(hello) {
@@ -126,17 +153,19 @@ describe('Slurp', function() {
       slurp.value('thing1', {hello: true});
       slurp.value('thing2', {hello: false});
 
-      slurp.factory('hello', ['thing1', 'thing2'], function(thing1, thing2) {
-        return function() {
+      slurp.factory('hello', ['thing1', 'thing2'], function(thing1, thing2, callback) {
+        callback(null, function(callback) {
           var invert = false;
-          return {find: function(two) {
-            if (invert) {
-              two = !two;
+          callback(null, {
+            find: function(two) {
+              if (invert) {
+                two = !two;
+              }
+              invert = !invert;
+              return two ? thing2 : thing1;
             }
-            invert = !invert;
-            return two ? thing2 : thing1;
-          }};
-        };
+          });
+        });
       }, {});
 
       var first = false;
@@ -202,6 +231,24 @@ describe('Slurp', function() {
 
       slurp.timeout(10, function(things) {
         done(new Error('we should never get here'));
+      });
+    });
+
+    it('should handle unfinished constructors', function(done) {
+      slurp.service('others', [], function(callback) {
+        // doing nothing :p
+      });
+      slurp.exec(['things', 'others'], function(things, others) {
+        expect(things).to.equal('others');
+        expect(others).to.equal('hello');
+        setTimeout(done, 15);
+      });
+
+      slurp.value('things', 'others');
+
+      slurp.timeout(10, function(things) {
+        expect(things).to.eql(1);
+        done();
       });
     });
   });
