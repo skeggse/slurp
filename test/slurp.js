@@ -10,7 +10,7 @@ describe('Slurp', function() {
   });
 
   describe('#value', function() {
-    it('should expose an injectable constructor', function(done) {
+    it('should expose an injectable creator', function(done) {
       slurp.value('thing1', {hello: true});
       slurp.value('thing2', {hello: false});
 
@@ -29,12 +29,12 @@ describe('Slurp', function() {
     });
   });
 
-  describe('#constructor', function() {
-    it('should expose an injectable constructor', function(done) {
-      slurp.constructor('thing1', function(callback) {
+  describe('#creator', function() {
+    it('should expose an injectable creator', function(done) {
+      slurp.creator('thing1', function(callback) {
         callback(null, {hello: true});
       });
-      slurp.constructor('thing2', function(callback) {
+      slurp.creator('thing2', function(callback) {
         callback(null, {hello: false});
       });
 

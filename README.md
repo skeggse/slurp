@@ -56,9 +56,9 @@ slurp.exec(['speed'], function(speed) {
 slurp.value('speed', 88);
 ```
 
-### constructor(name, constructor, [context])
+### creator(name, creator, [context])
 
-Register a constructor directly, without dependency injection. Use this for networked service discovery when the constructor has already been injected on the remote end. Remote services usually consist of static objects with methods, so value is usually more appropriate for remote services.
+Register a creator directly, without dependency injection. Use this for networked service discovery when the creator has already been injected on the remote end. Remote services usually consist of static objects with methods, so value is usually more appropriate for remote services.
 
 ```js
 var create = require('slurp');
@@ -74,7 +74,7 @@ slurp.exec(['bleep'], function(bleep) {
   // 'go' printed 10 times
 });
 
-slurp.constructor('bleep', function(callback) {
+slurp.creator('bleep', function(callback) {
   var service = {}, count = 10, listeners = [];
 
   service.next = function() {
@@ -169,9 +169,9 @@ slurp.value('initial', 4);
 
 ### factory(name, dependencies, callback, [context])
 
-Register a service factory. The provided callback should return the service constructor function when provided the requested dependencies. Similar to Slurp.service, callback will be called once, but the returned constructor will play again and again.
+Register a service factory. The provided callback should return the service creator function when provided the requested dependencies. Similar to Slurp.service, callback will be called once, but the returned creator will play again and again.
 
-The context is only applied to the callback, not to the constructor function.
+The context is only applied to the callback, not to the creator function.
 
 ```js
 var create = require('slurp');
