@@ -146,6 +146,50 @@ describe('Slurp', function() {
         done();
       });
     });
+
+    it('should not construct until injected', function(done) {
+      var sent = false;
+      setTimeout(function() {
+        if (sent) {
+          return;
+        }
+        sent = true;
+        done();
+      }, 10);
+      slurp.service('hello', [], function(callback) {
+        console.log('oops');
+        if (sent) {
+          return;
+        }
+        sent = true;
+        done(new Error("this shouldn't happen"));
+      });
+    });
+
+    it('should not construct a complex tree until injected', function(done) {
+      var sent = false;
+      setTimeout(function() {
+        if (sent) {
+          return;
+        }
+        sent = true;
+        done();
+      }, 10);
+      slurp.service('hello', [], function(callback) {
+        if (sent) {
+          return;
+        }
+        sent = true;
+        done(new Error("the service should not be instantiated"));
+      });
+      slurp.service('other', ['hello'], function(hello, callback) {
+        if (sent) {
+          return;
+        }
+        sent = true;
+        done(new Error("the service should not be instantiated"));
+      });
+    });
   });
 
   describe('#factory', function() {
