@@ -244,7 +244,17 @@ describe('Slurp', function() {
       slurp.exec(['hello', 'yellow'], function(hello, yellow) {
         expect(hello).to.eql({sometimes: true});
         expect(yellow).to.eql({name: 'yellow'});
-        done();
+
+        slurp.intercept(function(name) {
+          if (name === 'hello')
+            return {always: true};
+        });
+
+        slurp.exec(['hello', 'yellow'], function(hello, yellow) {
+          expect(hello).to.eql({always: true});
+          expect(yellow).to.eql({name: 'yellow'});
+          done();
+        });
       });
     });
   });
