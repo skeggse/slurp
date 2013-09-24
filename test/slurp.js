@@ -110,6 +110,46 @@ describe('Slurp', function() {
     });
   });
 
+  describe('#peek', function() {
+    it('should correctly identify known services', function(done) {
+      expect(slurp.peek('thing1')).to.equal(false);
+      expect(slurp.peek('thing2')).to.equal(false);
+      expect(slurp.peek('thing3')).to.equal(false);
+      expect(slurp.peek('thing4')).to.equal(false);
+      expect(slurp.peek('thing5')).to.equal(false);
+      slurp.value('thing1', {hello: true});
+      expect(slurp.peek('thing1')).to.equal(true);
+      slurp.creator('thing2', function(callback) {
+        callback(null, {hello: false});
+      });
+      expect(slurp.peek('thing2')).to.equal(true);
+      slurp.service('thing3', [], function(callback) {
+        callback(null, {helloo: true});
+      });
+      expect(slurp.peek('thing3')).to.equal(true);
+      slurp.factory('thing4', [], function(callback) {
+        callback(null, function(callback) {
+          callback(null, {helloo: false});
+        });
+      });
+      expect(slurp.peek('thing4')).to.equal(false);
+      slurp.exec(['thing1', 'thing2', 'thing3', 'thing4'], function() {
+        expect(slurp.peek('thing1')).to.equal(true);
+        expect(slurp.peek('thing2')).to.equal(true);
+        expect(slurp.peek('thing3')).to.equal(true);
+        expect(slurp.peek('thing4')).to.equal(true);
+        expect(slurp.peek('thing5')).to.equal(false);
+        expect(arguments).to.have.length(4);
+        slurp.value('thing5', {oops: false});
+      });
+      slurp.exec(['thing5'], function(thing5) {
+        expect(slurp.peek('thing5')).to.equal(true);
+        expect(thing5).to.eql({oops: false});
+        done();
+      });
+    });
+  });
+
   describe('#service', function() {
     it('should resolve dependencies and expose a consistent constructor', function(done) {
       slurp.value('thing1', {hello: true});

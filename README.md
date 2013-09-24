@@ -111,6 +111,31 @@ setTimeout(function() {
 }, 1000);
 ```
 
+### peek(name)
+
+Synchronously checks if the instance is aware of the given name.
+
+```js
+var create = require('slurp');
+var slurp = create();
+
+slurp.peek('hello'); // => false
+
+slurp.exec(['hello'], function(hello) {
+  slurp.peek('hello'); // => true
+
+  console.log(hello); // hiya
+
+  slurp.peek('hello'); // => true
+});
+
+slurp.peek('hello'); // => false
+
+slurp.value('hello', 'hiya');
+
+slurp.peek('hello'); // => true
+```
+
 ### service(name, dependencies, callback, [context])
 
 Register a service for all to see. The provided callback is executed once, and never again. The returned object will be used until/unless it is re-defined.
