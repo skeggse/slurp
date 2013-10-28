@@ -15,12 +15,12 @@ describe('Slurp', function() {
       slurp.value('thing2', {hello: false});
 
       var first = false;
-      slurp.registry.thing1(function(err, res) {
+      slurp._registry.thing1(function(err, res) {
         expect(err).to.not.be.ok();
         expect(res).to.eql({hello: true});
         first = true;
       });
-      slurp.registry.thing2(function(err, res) {
+      slurp._registry.thing2(function(err, res) {
         expect(err).to.not.be.ok();
         expect(res).to.eql({hello: false});
         expect(first).to.be.ok();
@@ -39,12 +39,12 @@ describe('Slurp', function() {
       });
 
       var first = false;
-      slurp.registry.thing1(function(err, res) {
+      slurp._registry.thing1(function(err, res) {
         expect(err).to.not.be.ok();
         expect(res).to.eql({hello: true});
         first = true;
       });
-      slurp.registry.thing2(function(err, res) {
+      slurp._registry.thing2(function(err, res) {
         expect(err).to.not.be.ok();
         expect(res).to.eql({hello: false});
         expect(first).to.be.ok();
@@ -132,7 +132,7 @@ describe('Slurp', function() {
           callback(null, {helloo: false});
         });
       });
-      expect(slurp.peek('thing4')).to.equal(false);
+      expect(slurp.peek('thing4')).to.equal(true);
       slurp.exec(['thing1', 'thing2', 'thing3', 'thing4'], function() {
         expect(slurp.peek('thing1')).to.equal(true);
         expect(slurp.peek('thing2')).to.equal(true);
@@ -234,39 +234,61 @@ describe('Slurp', function() {
 
   describe('#factory', function() {
     it('should resolve dependencies and expose a constructor', function(done) {
-      slurp.value('thing1', {hello: true});
-      slurp.value('thing2', {hello: false});
+      var thing1, thing2;
+      slurp.value('thing1', thing1 = {hello: true});
+      slurp.value('thing2', thing2 = {hello: false});
 
       slurp.factory('hello', ['thing1', 'thing2'], function(thing1, thing2, callback) {
-        callback(null, function(callback) {
-          var invert = false;
-          callback(null, {
-            find: function(two) {
-              if (invert) {
-                two = !two;
-              }
-              invert = !invert;
-              return two ? thing2 : thing1;
+        var self = this;
+        callback(null, {
+          find: function(two) {
+            if (self.invert) {
+              two = !two;
             }
-          });
+            self.invert = !self.invert;
+            return two ? thing2 : thing1;
+          }
         });
-      }, {});
+      }, {invert: false});
 
-      var first = false;
       slurp.exec(['hello'], function(hello) {
-        expect(hello.find(true)).to.eql({hello: false});
-        expect(hello.find(true)).to.eql({hello: true});
-        expect(hello.find(false)).to.eql({hello: true});
-        first = true;
+        expect(hello.find(true)).to.equal(thing2);
+        expect(hello.find(true)).to.equal(thing1);
+        expect(hello.find(false)).to.equal(thing1);
+        slurp.value('first', true);
       });
 
       slurp.exec(['hello'], function(hello) {
-        expect(hello.find(false)).to.eql({hello: true});
-        expect(hello.find(true)).to.eql({hello: true});
-        expect(hello.find(true)).to.eql({hello: false});
-        expect(hello.find(false)).to.eql({hello: false});
-        expect(hello.find(false)).to.eql({hello: true});
-        expect(first).to.be.ok();
+        expect(hello.find(false)).to.equal(thing2);
+        expect(hello.find(true)).to.equal(thing2);
+        expect(hello.find(true)).to.equal(thing1);
+        expect(hello.find(false)).to.equal(thing1);
+        expect(hello.find(false)).to.equal(thing2);
+        expect(slurp.peek('first')).to.be.ok();
+        done();
+      });
+    });
+
+    it('should instantiate separate instances', function(done) {
+      var calls = 0;
+      slurp.factory('hello', ['thing1', 'thing2'], function(thing1, thing2, callback) {
+        calls++;
+        callback(null, [thing1 + calls, thing2 + calls]);
+      });
+
+      slurp.value('thing1', 0);
+      slurp.value('thing2', 1);
+
+      slurp.resolve('hello', function(hello) {
+        expect(hello[0]).to.equal(1);
+        expect(hello[1]).to.equal(2);
+        slurp.value('first', true);
+      });
+
+      slurp.resolve('hello', function(hello) {
+        expect(hello[0]).to.equal(2);
+        expect(hello[1]).to.equal(3);
+        expect(slurp.peek('first')).to.be.ok();
         done();
       });
     });

@@ -1,6 +1,6 @@
 {
   "name": "slurp",
-  "version": "0.4.4",
+  "version": "0.6.0",
   "author": "Eli Skeggs <skeggse@gmail.com>",
   "description": "a lightweight asynchronous dependency injector",
   "main": "./index",

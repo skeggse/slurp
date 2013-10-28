@@ -194,9 +194,7 @@ slurp.value('initial', 4);
 
 ### factory(name, dependencies, callback, [context])
 
-Register a service factory. The provided callback should return the service creator function when provided the requested dependencies. Similar to Slurp.service, callback will be called once, but the returned creator will play again and again.
-
-The context is only applied to the callback, not to the creator function.
+Register a service factory. The provided callback should return the service instance when provided the requested dependencies. Unlike Slurp.service, callback will play again and again for each injection.
 
 ```js
 var create = require('slurp');
@@ -236,16 +234,14 @@ slurp.exec(['common'], function(common) {
 });
 
 // more complicated than it needs to be, use a service
-slurp.factory('common', ['initial'], function(value, callback) {
-  callback(null, function(callback) {
-    var service = {};
-
-    service.increment = function() {
+slurp.resolve('initial', function(value) {
+  slurp.factory('common', [], function(callback) {
+    this.increment = function() {
       return value++;
     };
 
-    callback(null, service);
-  });
+    callback(null, this);
+  }, {});
 });
 
 slurp.value('initial', 4);
@@ -268,7 +264,6 @@ TODO
 ====
 
 * asynchronous intercepts?
-* simplify factory pattern, no callback constructor?
 
 Unlicense / Public Domain
 =========================
