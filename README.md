@@ -1,6 +1,8 @@
 slurp
 =====
 
+[![Build Status](https://travis-ci.org/skeggse/slurp.png)](https://travis-ci.org/skeggse/slurp)
+
 Slurp is a lightweight asynchronous dependency injector. Slurp makes unit testing, mocking, and networked service discovery easier.
 
 Purpose
